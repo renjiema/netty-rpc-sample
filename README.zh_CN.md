@@ -55,6 +55,8 @@ RPC（Remote Procedure Call）—远程过程调用，它是一种通过网络�
 
 * Dubbo协议，Dubbo框架使用的协议，使用Hessian二进制序列化，并基于TCP实现传输协议，具体的传输协议如下：
 
+![](https://pic1.zhimg.com/80/v2-8db163dc36a973358307d3c78a3016cc_720w.jpg)
+
   - Magic - Magic High & Magic Low (16 bits)：标识协议版本号，Dubbo 协议：0xdabb
 
   - Req/Res (1 bit)：标识是请求或响应。请求： 1; 响应： 0。
@@ -107,6 +109,20 @@ RPC（Remote Procedure Call）—远程过程调用，它是一种通过网络�
   - - - 返回值：从服务端返回的响应bytes
 
 * gRPC协议，gRPC协议使用Protobuf实现序列化，基于HTTP/2实现输出协议，具体的实现后续有时间再补充。
+
+## 自定义传输协议
+
+因为TCP/IP 中消息传输基于流的方式，没有边界，因此会出现[粘包于粘包的现象](https://github.com/renjiema/note/blob/bc2fecc8cff3a3bf78bff317cb0f7f52a0e7999d/java/netty/Netty.md#L1)，所以必须定义协议划定消息的边界。
+
+### 自定义协议要素
+
+* 魔数，用来在第一时间判定是否是无效数据包
+* 版本号，可以支持协议的升级
+* 序列化算法，消息正文到底采用哪种序列化反序列化方式，可以由此扩展，例如：json、protobuf、hessian、jdk
+* 指令类型，是登录、注册、单聊、群聊... 跟业务相关
+* 请求序号，为了双工通信，提供异步能力
+* 正文长度
+* 消息正文
 
 
 
