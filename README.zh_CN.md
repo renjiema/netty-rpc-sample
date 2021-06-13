@@ -53,7 +53,60 @@ RPC（Remote Procedure Call）—远程过程调用，它是一种通过网络�
 
 ### 常用RPC框架的实现
 
-* Dubbo协议，Dubbo框架使用的协议
+* Dubbo协议，Dubbo框架使用的协议，使用Hessian二进制序列化，并基于TCP实现传输协议，具体的传输协议如下：
+
+  - Magic - Magic High & Magic Low (16 bits)：标识协议版本号，Dubbo 协议：0xdabb
+
+  - Req/Res (1 bit)：标识是请求或响应。请求： 1; 响应： 0。
+
+  - 2 Way (1 bit)：仅在 Req/Res 为1（请求）时才有用，标记是否期望从服务器返回值。如果需要来自服务器的返回值，则设置为1。
+
+  - Event (1 bit)：标识是否是事件消息，例如，心跳事件。如果这是一个事件，则设置为1。
+
+  - Serialization ID (5 bit)：标识序列化类型：比如 fastjson 的值为6。
+
+  - Status (8 bits)：仅在 Req/Res 为0（响应）时有用，用于标识响应的状态。
+
+  - - 20 - OK
+    - 30 - CLIENT_TIMEOUT
+    - 31 - SERVER_TIMEOUT
+    - 40 - BAD_REQUEST
+    - 50 - BAD_RESPONSE
+    - 60 - SERVICE_NOT_FOUND
+    - 70 - SERVICE_ERROR
+    - 80 - SERVER_ERROR
+    - 90 - CLIENT_ERROR
+    - 100 - SERVER_THREADPOOL_EXHAUSTED_ERROR
+
+  
+
+  - Request ID (64 bits)：标识唯一请求。类型为long。
+
+  - Data Length (32 bits)：序列化后的内容长度（可变部分），按字节计数。int类型。
+
+  - Variable Part：被特定的序列化类型（由序列化 ID 标识）序列化后，每个部分都是一个 byte [] 或者 byte
+
+  - - 如果是请求包 ( Req/Res = 1)，则每个部分依次为：
+
+    - - Dubbo version
+      - Service name
+      - Service version
+      - Method name
+      - Method parameter types
+      - Method arguments
+      - Attachments
+
+    - 如果是响应包（Req/Res = 0），则每个部分依次为：
+
+    - - 返回值类型(byte)，标识从服务器端返回的值类型：
+
+      - - 返回空值：RESPONSE_NULL_VALUE 2
+        - 正常响应值： RESPONSE_VALUE 1
+        - 异常：RESPONSE_WITH_EXCEPTION 0
+
+  - - - 返回值：从服务端返回的响应bytes
+
+* gRPC协议，gRPC协议使用Protobuf实现序列化，基于HTTP/2实现输出协议，具体的实现后续有时间再补充。
 
 
 
